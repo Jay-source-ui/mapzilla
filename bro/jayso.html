@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tourist Path Optimizer</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        header {
+            background-color: #6200ea;
+            color: #fff;
+            padding: 1rem;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 1.5rem;
+        }
+
+        .navbar ul {
+            list-style: none;
+            display: flex;
+        }
+
+        .navbar ul li {
+            margin-left: 1rem;
+        }
+
+        .navbar ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        main {
+            padding: 2rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 50%;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6200ea;
+        }
+
+        .search-container {
+            margin-top: rem;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-container input {
+            padding: 0.5rem;
+            font-size: 1rem;
+            flex: 1;
+        }
+
+        .search-container button {
+            padding: 0.5rem;
+            font-size: 1rem;
+            background-color: #6200ea;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .search-container button:hover {
+            background-color: #3700b3;
+        }
+
+        .map-container {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        iframe {
+            width: 100%;
+            height: 300px;
+            border-radius: 8px;
+        }
+
+        .preferences-label {
+            display: block;
+            margin: 1rem 0 0.5rem;
+            font-weight: bold;
+        }
+
+        .schedule-container {
+            display: flex;
+            flex-direction: column;
+            margin-top: 1rem;
+        }
+
+        .schedule-container input,
+        .schedule-container select {
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .schedule {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #e3f2fd;
+            border-radius: 5px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #6200ea;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <nav class="navbar">
+            <h1>Tourist Path Optimizer</h1>
+            <ul>
+                <li><a href="#" onclick="openModal('homeModal')">Home</a></li>
+                <li><a href="#" onclick="openModal('preferencesModal')">Preferences</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <section id="home">
+            <h2>Welcome to Your Travel Companion</h2>
+            <p>Plan your trip effortlessly and explore destinations efficiently.</p>
+
+            <div class="map-container">
+                <h3>Explore Your Location</h3>
+                <p>Enter a place to explore on the map:</p>
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Enter location...">
+                    <button onclick="searchPlace()">Search</button>
+                </div>
+                
+                <div id="map" class="map-container">
+                    <p>Loading your location...</p>
+                </div>
+            </div>
+
+            <div id="scheduleSection" class="schedule"></div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <div id="homeModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('homeModal')">×</span>
+            <h2>Welcome to Your Travel Companion</h2>
+            <p>Plan your trip effortlessly and explore destinations efficiently.</p>
+        </div>
+    </div>
+
+    <div id="preferencesModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('preferencesModal')">×</span>
+            <h2>User Preferences</h2>
+            <form id="preferencesForm" class="schedule-container" onsubmit="schedulePlan(event)">
+                <label for="time" class="preferences-label">Time Available (in hours):</label>
+                <input type="number" id="time" name="time" min="1" max="24" required>
+                
+                <label for="date" class="preferences-label">Schedule Date:</label>
+                <input type="date" id="date" name="date" required>
+
+                <label for="interests" class="preferences-label">Interests:</label>
+                <select id="interests" name="interests" required>
+                    <option value="">Select your interests...</option>
+                    <option value="historical">Historical Sites</option>
+                    <option value="nature">Nature</option>
+                    <option value="adventure">Adventure</option>
+                    <option value="food">Food & Restaurants</option>
+                    <option value="restroom">Restroom</option>
+                    <option value="transport">Transport Hub</option>
+                </select>
+
+                <button type="submit">Schedule Plan</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 Tourist Path Optimizer. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const activities = {
+            historical: [
+                { name: "Visit the Ancient Castle", lat: 40.7128, lng: -74.0060, open: "09:00 AM", close: "05:00 PM", cost: 10, duration: 3 },
+                { name: "Explore the Historic Museum", lat: 40.7129, lng: -74.0059, open: "10:00 AM", close: "06:00 PM", cost: 8, duration: 2 },
+                { name: "Tour the Old Town Square", lat: 40.7135, lng: -74.0075, open: "08:00 AM", close: "08:00 PM", cost: 5, duration: 2 },
+                { name: "Visit the Royal Palace", lat: 40.7140, lng: -74.0080, open: "10:00 AM", close: "06:00 PM", cost: 12, duration: 3 },
+                { name: "Explore the Ancient Ruins", lat: 40.7145, lng: -74.0085, open: "09:00 AM", close: "05:00 PM", cost: 7, duration: 4 }
+            ],
+            nature: [
+                { name: "Hiking in the National Park", lat: 40.7127, lng: -74.0061, open: "06:00 AM", close: "08:00 PM", cost: 5, duration: 4 },
+                { name: "Picnic at the Lake", lat: 40.7126, lng: -74.0062, open: "24 hours", close: "24 hours", cost: 0, duration: 2 },
+                { name: "Bird Watching in the Forest", lat: 40.7132, lng: -74.0072, open: "07:00 AM", close: "07:00 PM", cost: 3, duration: 3 },
+                { name: "Visit the Botanical Gardens", lat: 40.7138, lng: -74.0078, open: "09:00 AM", close: "06:00 PM", cost: 6, duration: 2 },
+                { name: "Explore the Waterfalls", lat: 40.7142, lng: -74.0082, open: "08:00 AM", close: "06:00 PM", cost: 4, duration: 3 }
+            ],
+            adventure: [
+                { name: "Skydiving Experience", lat: 40.7130, lng: -74.0070, open: "09:00 AM", close: "06:00 PM", cost: 150, duration: 2 },
+                { name: "Zip-lining in the Forest", lat: 40.7131, lng: -74.0071, open: "08:00 AM", close: "07:00 PM", cost: 75, duration: 3 },
+                { name: "Rock Climbing Adventure", lat: 40.7136, lng: -74.0076, open: "10:00 AM", close: "05:00 PM", cost: 50, duration: 4 },
+                { name: "White Water Rafting", lat: 40.7141, lng: -74.0081, open: "09:00 AM", close: "04:00 PM", cost: 80, duration: 3 },
+                { name: "Bungee Jumping", lat: 40.7146, lng: -74.0086, open: "10:00 AM", close: "06:00 PM", cost: 60, duration: 2 }
+            ],
+            food: [
+                { name: "Dining at Local Restaurants", lat: 40.7125, lng: -74.0080, open: "11:00 AM", close: "10:00 PM", cost: 25, duration: 2 },
+                { name: "Food Tasting Tour", lat: 40.7124, lng: -74.0081, open: "12:00 PM", close: "05:00 PM", cost: 50, duration: 3 },
+                { name: "Visit the Farmers Market", lat: 40.7133, lng: -74.0073, open: "08:00 AM", close: "02:00 PM", cost: 10, duration: 2 },
+                { name: "Wine Tasting Experience", lat: 40.7139, lng: -74.0079, open: "12:00 PM", close: "08:00 PM", cost: 40, duration: 2 },
+                { name: "Cooking Class with Local Chefs", lat: 40.7143, lng: -74.0083, open: "10:00 AM", close: "04:00 PM", cost: 35, duration: 3 }
+            ],
+            restroom: [
+                { name: "Public Restroom at Central Park", lat: 40.7123, lng: -74.0063, open: "24 hours", close: "24 hours", cost: 0, duration: 0.25 },
+                { name: "Restroom at Main Square", lat: 40.7130, lng: -74.0070, open: "06:00 AM", close: "10:00 PM", cost: 0, duration: 0.25 }
+            ],
+            transport: [
+                { name: "Central Bus Terminal", lat: 40.7140, lng: -74.0085, open: "05:00 AM", close: "11:00 PM", cost: 0, duration: 0.5 },
+                { name: "Main Train Station", lat: 40.7150, lng: -74.0090, open: "04:00 AM", close: "12:00 AM", cost: 0, duration: 0.5 }
+            ]
+        };
+
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        document.getElementById("map").innerHTML = `
+                            <iframe 
+                                src="https://maps.google.com/maps?q=${latitude},${longitude}&en=es&z=14&output=embed" 
+                                frameborder="0"
+                                allowfullscreen>
+                            </iframe>`;
+                        displayNearbyActivities(latitude, longitude);
+                    },
+                    (error) => {
+                        document.getElementById("map").innerHTML = `<p>Error retrieving location: ${error.message}</p>`;
+                    }
+                );
+            } else {
+                document.getElementById("map").innerHTML = "<p>Geolocation is not supported by this browser.</p>";
+            }
+        }
+
+        function searchPlace() {
+            const query = document.getElementById("searchInput").value;
+            if (query.trim()) {
+                document.getElementById("map").innerHTML = `
+                    <iframe 
+                        src="https://maps.google.com/maps?q=${encodeURIComponent(query)}&en=es&z=14&output=embed" 
+                        frameborder="0"
+                        allowfullscreen>
+                    </iframe>`;
+            }
+        }
+
+        function displayNearbyActivities(lat, lng) {
+            const nearbyActivities = [];
+
+            for (const category in activities) {
+                activities[category].forEach(activity => {
+                    const distance = haversineDistance(lat, lng, activity.lat, activity.lng);
+                    if (distance <= 5) { // Only include activities within 5 km
+                        nearbyActivities.push(activity);
+                    }
+                });
+            }
+
+            console.log('Nearby Activities:', nearbyActivities); // Log nearby activities to the console
+        }
+
+        // Calculate distance using Haversine formula
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of Earth in kilometers
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; // Distance in kilometers
+        }
+
+        function schedulePlan(event) {
+            event.preventDefault();
+            const time = parseInt(document.getElementById("time").value); // Total available time in hours
+            const interests = document.getElementById("interests").value;
+
+            const activityList = activities[interests] || [];
+            let scheduleDisplay = `<h3>Your Scheduled Activities:</h3><ul>`;
+            let travelCost = 0; // Track total cost
+            let totalTime = 0; // Track total time spent on activities
+
+            // Iterate through activities and add them to the schedule until time runs out
+            for (const activity of activityList) {
+                const activityDuration = activity.duration || 2; // Use activity's duration if available, otherwise default to 2 hours
+                if (totalTime + activityDuration <= time) {
+                    scheduleDisplay += `<li>${activity.name} (Open: ${activity.open}, Close: ${activity.close}, Duration: ${activityDuration} hours, Cost: Rs.${activity.cost})</li>`;
+                    travelCost += activity.cost; // Add cost of activity
+                    totalTime += activityDuration; // Add duration of activity
+                } else {
+                    break; // Stop adding activities if the time limit is exceeded
+                }
+            }
+
+            scheduleDisplay += `</ul>`;
+            scheduleDisplay += `<p><strong>Travel Estimated Cost: Rs.${travelCost}</strong></p>`;
+            scheduleDisplay += `<p><strong>Total Time Spent: ${totalTime} hours</strong></p>`;
+            document.getElementById("scheduleSection").innerHTML = scheduleDisplay;
+
+            closeModal('preferencesModal');
+        }
+
+        // Load user's location when the page loads
+        window.onload = getUserLocation;
+    </script>
+</body>
+</html>
